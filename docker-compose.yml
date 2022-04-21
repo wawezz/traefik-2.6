@@ -1,0 +1,30 @@
+version: '3.9'
+
+services:
+  traefik:
+    image: traefik:2.6
+    container_name: traefik
+    command:
+      - --accesslog=${ACCESSLOG}
+      - --api.insecure=${API_INSECURE}
+      - --entryPoints.web.address=:80
+      - --entryPoints.websecure.address=:443
+      - --entryPoints.websecure.http.tls.certResolver=leresolver
+      - --certificatesresolvers.leresolver.acme.email=${LE_ACME_EMAIL}
+      - --certificatesresolvers.leresolver.acme.storage=acme.json
+      - --certificatesresolvers.leresolver.acme.httpchallenge.entrypoint=web
+      - --providers.docker=true
+      - --providers.docker.exposedByDefault=false
+      - --providers.docker.network=web
+    networks:
+      - web
+    ports:
+      - 80:80
+      - 443:443
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+    restart: always
+
+networks:
+  web:
+    external: true
